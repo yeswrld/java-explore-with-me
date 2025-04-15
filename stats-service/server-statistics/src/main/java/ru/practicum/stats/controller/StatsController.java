@@ -26,8 +26,7 @@ public class StatsController {
     public HitDto saveHit(@RequestBody @Validated HitDto hitDto) {
         log.info("Обновление статистсики; app - {}, uri - {}, ip - {}, timestamp - {}", hitDto.getApp(),
                 hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
-        statsService.saveHit(hitDto);
-        return hitDto;
+        return  statsService.saveHit(hitDto);
     }
 
     @GetMapping("/stats")

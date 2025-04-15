@@ -10,13 +10,13 @@ import ru.practicum.stats.model.Hit;
 import ru.practicum.stats.repository.HitStorage;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class StatsServiceImpl implements StatsService {
     private final HitStorage hitStorage;
+
     @Autowired
     private final HitMapper hitMapper;
 

@@ -18,6 +18,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>dto-statistics</artifactId>
             <version>${project.version}</version>

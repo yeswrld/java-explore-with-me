@@ -11,7 +11,6 @@ import ru.practicum.ViewStatsDto;
 import ru.practicum.stats.service.StatsService;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -26,7 +25,7 @@ public class StatsController {
     public HitDto saveHit(@RequestBody @Validated HitDto hitDto) {
         log.info("Обновление статистсики; app - {}, uri - {}, ip - {}, timestamp - {}", hitDto.getApp(),
                 hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
-        return  statsService.saveHit(hitDto);
+        return statsService.saveHit(hitDto);
     }
 
     @GetMapping("/stats")

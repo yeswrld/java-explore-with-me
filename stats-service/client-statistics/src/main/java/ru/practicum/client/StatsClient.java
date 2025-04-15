@@ -23,11 +23,11 @@ public class StatsClient extends BaseClient {
                 .build());
     }
 
-    public void addHit(HitDto hitDto){
+    public void addHit(HitDto hitDto) {
         post("/hit", hitDto);
     }
 
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique){
+    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         Map<String, Object> param = Map.of(
                 "start", start.format(formatter),
                 "end", end.format(formatter),

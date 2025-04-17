@@ -1,7 +1,6 @@
 package ru.practicum.stats.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.HitDto;
 import ru.practicum.ViewStatsDto;
@@ -16,8 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatsServiceImpl implements StatsService {
     private final HitStorage hitStorage;
-
-    @Autowired
     private final HitMapper hitMapper;
 
     @Override

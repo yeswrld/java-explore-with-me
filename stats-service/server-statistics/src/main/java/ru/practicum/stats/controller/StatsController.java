@@ -1,10 +1,10 @@
 package ru.practicum.stats.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.HitDto;
 import ru.practicum.ViewStatsDto;
@@ -22,7 +22,7 @@ public class StatsController {
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
-    public HitDto saveHit(@RequestBody @Validated HitDto hitDto) {
+    public HitDto saveHit(@RequestBody @Valid HitDto hitDto) {
         log.info("Обновление статистсики; app - {}, uri - {}, ip - {}, timestamp - {}", hitDto.getApp(),
                 hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
         return statsService.saveHit(hitDto);

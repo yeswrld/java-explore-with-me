@@ -21,8 +21,8 @@ public class ErrorHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<String> handleGenericException(Throwable ex) {
         return new ResponseEntity<>("Произошла ошибка: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

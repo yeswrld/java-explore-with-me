@@ -1,31 +1,80 @@
 services:
+  postgres-ewm:
+    image: postgres:15
+    container_name: main-service-db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_ewm_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: mainService
+      POSTGRES_USER: dmini
+      POSTGRES_PASSWORD: 12345
+    healthcheck:
+      test: pg_isready -U dmini -d mainService
+      interval: 5s
+      timeout: 5s
+      retries: 1
+
+  postgres-stats:
+    image: postgres:15
+    container_name: stats-service-db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_stats_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: statsService
+      POSTGRES_USER: dmini
+      POSTGRES_PASSWORD: 12345
+    healthcheck:
+      test: pg_isready -U dmini -d statsService
+      interval: 5s
+      timeout: 5s
+      retries: 1
+
   stats-server:
-    build: stats-service/server-statistics
-    image: java-explore-with-me-stats-server
-    container_name: statsApp
+    build:
+      context: ./stats-service/server-statistics
+    image: stats-server
+    container_name: stats-service
     ports:
       - "9090:9090"
     depends_on:
-      - stats-db
+      postgres-stats:
+        condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/postgres
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=12345
+      SERVER_PORT: 9090
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-stats:5432/statsService
+      SPRING_DATASOURCE_USERNAME: dmini
+      SPRING_DATASOURCE_PASSWORD: 12345
+    restart: on-failure
 
-
-  stats-db:
-    image: postgres:16.1
-    container_name: statsDb
+  ewm-service:
+    build:
+      context: ./ewm-service
+    image: ewm-service
+    container_name: ewm-service
     ports:
-      - "5432:5432"
-    volumes:
-      - ./volumes/postgres:/var/lib/postgresql/data/
+      - "8080:8080"
+    depends_on:
+      postgres-ewm:
+        condition: service_healthy
+      stats-server:
+        condition: service_started
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=12345
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ewm:5432/mainService
+      SPRING_DATASOURCE_USERNAME: dmini
+      SPRING_DATASOURCE_PASSWORD: 12345
+      STATS_SERVICE_URL: http://stats-service:9090  # Важное изменение!
+    restart: on-failure
+
+volumes:
+  postgres_ewm_data:
+  postgres_stats_data:
+
+networks:
+  default:
+    name: ewm-network
+    driver: bridge

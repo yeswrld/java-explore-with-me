@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
+@Builder
 public class HitDto {
     private Long id;
     @NotBlank

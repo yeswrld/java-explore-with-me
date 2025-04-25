@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.HitDto;
 import ru.practicum.ViewStatsDto;
+import ru.practicum.stats.model.Hit;
 import ru.practicum.stats.service.StatsService;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,6 @@ public class StatsController {
             @RequestParam(required = false, value = "unique") boolean unique
     ) {
         log.info("Запрос получения статистики с параметрами: start {}, end {}, uris {}, unique {}", start, end, uris, unique);
-        List<ViewStatsDto> statsDtoList = statsService.findHits(start, end, uris, unique);
-        return statsDtoList;
+        return statsService.findHits(start, end, uris, unique);
     }
 }

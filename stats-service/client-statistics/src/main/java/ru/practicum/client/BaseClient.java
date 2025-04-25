@@ -7,12 +7,14 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+
 public class BaseClient {
     protected final RestTemplate rest;
 
     public BaseClient(RestTemplate rest) {
         this.rest = rest;
     }
+
 
     protected ResponseEntity<Object> get(String path) {
         return get(path, null, null);

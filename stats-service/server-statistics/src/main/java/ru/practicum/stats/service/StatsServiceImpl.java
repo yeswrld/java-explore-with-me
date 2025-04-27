@@ -11,7 +11,6 @@ import ru.practicum.stats.repository.HitStorage;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,7 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStatsDto> findHits(LocalDateTime start, LocalDateTime end, List<String> uris,
-                                               Boolean unique
+                                       Boolean unique
     ) {
         if (start.isAfter(end)) {
             throw new DateErrorExcep("Ошибка даты.");

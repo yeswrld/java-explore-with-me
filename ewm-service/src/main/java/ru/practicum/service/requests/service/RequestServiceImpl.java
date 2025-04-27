@@ -1,7 +1,11 @@
 package ru.practicum.service.requests.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.practicum.HitDto;
+import ru.practicum.client.StatsClient;
 import ru.practicum.service.events.model.Event;
 import ru.practicum.service.events.model.State;
 import ru.practicum.service.events.storage.EventStorage;
@@ -30,9 +34,13 @@ public class RequestServiceImpl implements RequestService {
     private final UserStorage userStorage;
     private final EventStorage eventStorage;
     private final RequestStorage requestStorage;
+    private final StatsClient statsClient;
+    @Value("${app}")
+    private String appName;
 
     @Override
-    public ParticipationRequestDto addRequest(Long userId, Long eventId) {
+    public ParticipationRequestDto addRequest(Long userId, Long eventId, HttpServletRequest httpServletRequest) {
+        statsClient.addHit(new HitDto(null, appName, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr(), LocalDateTime.now()));
         if (!requestStorage.findAllByRequesterIdAndEventId(userId, eventId).isEmpty()) {
             throw new ViolationExcep("Запрос уже существует");
         }
@@ -67,13 +75,15 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<ParticipationRequestDto> getAllUserRequests(Long userId) {
+    public List<ParticipationRequestDto> getAllUserRequests(Long userId, HttpServletRequest httpServletRequest) {
+        statsClient.addHit(new HitDto(null, appName, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr(), LocalDateTime.now()));
         User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundExcep("Пользователь с ИД = " + userId + " не найден"));
         return requestStorage.findAllByRequesterId(userId).stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
     }
 
     @Override
-    public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
+    public ParticipationRequestDto cancelRequest(Long userId, Long requestId, HttpServletRequest httpServletRequest) {
+        statsClient.addHit(new HitDto(null, appName, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr(), LocalDateTime.now()));
         User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundExcep("Пользователь с ИД = " + userId + " не найден"));
         Request request = requestStorage.findById(requestId).orElseThrow(() -> new NotFoundExcep("Запрос на участие с ИД = " + requestId + " не найден"));
         request.setStatus(CANCELED);
@@ -81,7 +91,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
+    public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId, HttpServletRequest httpServletRequest) {
+        statsClient.addHit(new HitDto(null, appName, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr(), LocalDateTime.now()));
         User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundExcep("Пользователь с ИД = " + userId + " не найден"));
         Event event = eventStorage.findById(eventId).orElseThrow(() -> new NotFoundExcep("Эвент с ИД = " + userId + " не найден"));
         List<Request> requests = requestStorage.findByEventIdAndInitiatorId(eventId, userId);
@@ -93,22 +104,19 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
-                                                              EventRequestStatusUpdateRequest updateRequest) {
-        // 1. Проверка существования пользователя и события
+                                                              EventRequestStatusUpdateRequest updateRequest, HttpServletRequest httpServletRequest) {
+        statsClient.addHit(new HitDto(null, appName, httpServletRequest.getRequestURI(), httpServletRequest.getRemoteAddr(), LocalDateTime.now()));
         User user = userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundExcep("Пользователь с ИД = " + userId + " не найден"));
         Event event = eventStorage.findById(eventId)
                 .orElseThrow(() -> new NotFoundExcep("Эвент с ИД = " + eventId + " не найден"));
 
-        // 2. Получаем запросы для обновления
         List<Request> requests = requestStorage.findAllById(updateRequest.getRequestIds());
 
-        // 3. Проверяем, что все запросы в статусе PENDING
         if (requests.stream().anyMatch(request -> !request.getStatus().equals(Status.PENDING))) {
             throw new ViolationExcep("Статус можно изменить только у запросов в состоянии ожидания");
         }
 
-        // 4. Обработка в зависимости от статуса
         if (updateRequest.getStatus().equals(REJECTED)) {
             return processRejection(requests);
         } else if (updateRequest.getStatus().equals(CONFIRMED)) {

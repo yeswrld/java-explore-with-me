@@ -6,12 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.HitDto;
-import ru.practicum.client.StatsClient;
 import ru.practicum.service.requests.dto.ParticipationRequestDto;
 import ru.practicum.service.requests.service.RequestService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -20,42 +17,23 @@ import java.util.List;
 @RequestMapping("/users/{userId}/requests")
 public class RequestController {
     private final RequestService requestService;
-    private final StatsClient statsClient;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addRequest(@PathVariable @Positive Long userId, @RequestParam @Positive Long eventId, HttpServletRequest request) {
-        statsClient.addHit(new HitDto(null,
-                "ewm-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now()
-        ));
         log.info("REQUESTS ==>> Добавление запроса на участие в эвенте {}, от пользователя с ИД = {}", eventId, userId);
-        return requestService.addRequest(userId, eventId);
+        return requestService.addRequest(userId, eventId, request);
     }
 
     @GetMapping
     public List<ParticipationRequestDto> getAllRequests(@PathVariable @Positive Long userId, HttpServletRequest request) {
-        statsClient.addHit(new HitDto(null,
-                "ewm-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now()
-        ));
         log.info("REQUESTS ==>> Получение всех запросов пользователя с ИД = {}", userId);
-        return requestService.getAllUserRequests(userId);
+        return requestService.getAllUserRequests(userId, request);
     }
 
     @PatchMapping("/{requestId}/cancel")
     public ParticipationRequestDto cancelRequest(@PathVariable @Positive Long userId, @PathVariable @Positive Long requestId, HttpServletRequest request) {
-        statsClient.addHit(new HitDto(null,
-                "ewm-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now()
-        ));
         log.info("REQUESTS ==>> Отмента запроса на участие с ИД = {} от пользователя с ИД = {}", requestId, userId);
-        return requestService.cancelRequest(userId, requestId);
+        return requestService.cancelRequest(userId, requestId, request);
     }
 }

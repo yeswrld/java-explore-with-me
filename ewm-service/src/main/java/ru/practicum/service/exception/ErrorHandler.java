@@ -18,7 +18,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    // Обработка ошибок валидации (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -40,7 +39,6 @@ public class ErrorHandler {
         return apiError;
     }
 
-    // Обработка ошибок бизнес-логики
     @ExceptionHandler({
             IllegalArgumentException.class,
             IllegalStateException.class
@@ -58,7 +56,6 @@ public class ErrorHandler {
         return apiError;
     }
 
-    // Обработка ошибок "Не найдено"
     @ExceptionHandler({
             NotFoundExcep.class // Ваш кастомный exception
     })
@@ -75,7 +72,6 @@ public class ErrorHandler {
         return apiError;
     }
 
-    // Обработка ошибок типа параметров
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
@@ -94,10 +90,9 @@ public class ErrorHandler {
         return apiError;
     }
 
-    // Обработка всех остальных исключений
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleAllExceptions(Exception ex) {
+    public ApiError handleAllExceptions(Throwable ex) {
         ApiError apiError = new ApiError(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR,

@@ -2,6 +2,7 @@ package ru.practicum.service.events.service;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,6 +34,8 @@ public class PublicEventServiceImpl extends BaseService implements PublicEventSe
     private final EventStorage eventStorage;
     private final RequestStorage requestStorage;
     private final StatsClient statsClient;
+    @Value("${app}")
+    private String appName;
 
     public PublicEventServiceImpl(RequestStorage requestStorage, StatsClient statsClient, EventStorage eventStorage, RequestStorage requestStorage1, StatsClient statsClient1) {
         super(requestStorage, statsClient);
@@ -50,7 +53,7 @@ public class PublicEventServiceImpl extends BaseService implements PublicEventSe
             throw new NotFoundExcep("Событие не опубликовано");
         }
         statsClient.addHit(HitDto.builder()
-                .app("ewm-service")
+                .app(appName)
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now())
@@ -63,8 +66,8 @@ public class PublicEventServiceImpl extends BaseService implements PublicEventSe
     }
 
     @Override
-    public List<EventShortDto> getAllPublicEvents(EventUserParams params, PageRequest pageRequest) {
-
+    public List<EventShortDto> getAllPublicEvents(EventUserParams params, PageRequest pageRequest, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         Specification<Event> spec = Specification.where((root, query, cb) ->
                 cb.equal(root.get("state"), State.PUBLISHED));
 

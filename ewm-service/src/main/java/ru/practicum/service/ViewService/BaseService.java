@@ -25,64 +25,34 @@ import static ru.practicum.service.requests.model.Status.CONFIRMED;
 public abstract class BaseService {
     private final RequestStorage requestStorage;
     private final StatsClient statsClient;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /*protected Map<Long, Long> getViewsForEvents(List<Event> events) {
-        Map<String, Long> eventUrisAndIds = events.stream()
-                .collect(Collectors.toMap(
-                        event -> String.format("/events/%s", event.getId()),
-                        Event::getId
-                ));
-        LocalDateTime startDate = events.stream()
-                .map(Event::getCreatedOn)
-                .min(LocalDateTime::compareTo)
-                .orElse(null);
-        Map<Long, Long> statsMap = new HashMap<>();
-
-        if (startDate != null) {
-            List<ViewStatsDto> stats = statsClient.getStats(
-                    LocalDateTime.of(2020, 1, 1, 0, 0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    LocalDateTime.of(2025, 12, 31, 23, 59, 59)
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), List.copyOf(eventUrisAndIds.keySet()), true);
-            statsMap = stats.stream().collect(Collectors.toMap(
-                    statsDto -> parseEventIdFromUrl(statsDto.getUri()),
-                    ViewStatsDto::getHits
-            ));
-        }
-        return statsMap;
-    }*/
 
     protected Map<Long, Long> getViewsForEvents(List<Event> events) {
         if (events.isEmpty()) {
             return new HashMap<>();
         }
 
-        // Формируем URI событий в формате /events/{eventId}
         Map<String, Long> eventUrisAndIds = events.stream()
                 .collect(Collectors.toMap(
                         event -> String.format("/events/%s", event.getId()),
                         Event::getId
                 ));
 
-        // Определяем минимальную дату создания событий
         LocalDateTime startDate = events.stream()
                 .map(Event::getCreatedOn)
                 .min(LocalDateTime::compareTo)
                 .orElse(null);
 
-        // Если список событий пуст или дата не определена, возвращаем пустую карту
         if (startDate == null) {
             return new HashMap<>();
         }
 
-        // Преобразуем даты в строки для запроса статистики
-        String start = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String end = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String start = startDate.format(FORMATTER);
+        String end = LocalDateTime.now().format(FORMATTER);
 
-        // Получаем статистику просмотров через StatsClient
         List<ViewStatsDto> stats = statsClient.getStats(start, end, new ArrayList<>(eventUrisAndIds.keySet()), true);
 
-        // Преобразуем результат в карту: ID события -> количество просмотров
         return stats.stream()
                 .collect(Collectors.toMap(
                         statsDto -> parseEventIdFromUrl(statsDto.getUri()),
@@ -91,7 +61,6 @@ public abstract class BaseService {
     }
 
     private Long parseEventIdFromUrl(String uri) {
-        // Извлекаем ID события из URI (/events/{eventId})
         return Long.parseLong(uri.replaceAll(".*/(\\d+)", "$1"));
     }
 
@@ -106,15 +75,6 @@ public abstract class BaseService {
                         confirmed.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toList());
     }
-
-
-/*    private Long parseEventIdFromUrl(String url) {
-        String[] parts = url.split("/events/");
-        if (parts.length == 2) {
-            return Long.parseLong(parts[1]);
-        }
-        return -1L;
-    }*/
 
     protected Map<Long, Long> getConfirmedRequests(List<Event> events) {
         if (events.isEmpty()) return Collections.emptyMap();

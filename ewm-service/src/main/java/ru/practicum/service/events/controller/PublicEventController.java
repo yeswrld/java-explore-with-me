@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.HitDto;
-import ru.practicum.client.StatsClient;
 import ru.practicum.service.events.dto.EventDto;
 import ru.practicum.service.events.dto.EventShortDto;
 import ru.practicum.service.events.model.EventSort;
@@ -26,7 +24,6 @@ import java.util.List;
 public class PublicEventController {
     private final PublicEventService eventService;
     private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    private final StatsClient statsClient;
 
     @GetMapping
     public List<EventShortDto> getAllPublicEvents(
@@ -40,12 +37,6 @@ public class PublicEventController {
             @RequestParam(value = "from", defaultValue = "0") Integer from,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             HttpServletRequest request) {
-        statsClient.addHit(new HitDto(null,
-                "ewm-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now()
-        ));
         log.info("PUBLIC ==>> Получение событий /events");
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationExcep("Ошибка даты");
@@ -53,7 +44,7 @@ public class PublicEventController {
         int page = from / size;
         PageRequest pageRequest = PageRequest.of(page, size);
         return eventService.getAllPublicEvents(
-                new EventUserParams(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, request), pageRequest);
+                new EventUserParams(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, request), pageRequest, request);
     }
 
     @GetMapping("/{eventId}")

@@ -1,8 +1,11 @@
 package ru.practicum.service.events.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.HitDto;
 import ru.practicum.client.StatsClient;
 import ru.practicum.service.ViewService.BaseService;
 import ru.practicum.service.category.storage.CategoryStorage;
@@ -33,16 +36,21 @@ public class AdminEventServiceImpl extends BaseService implements AdminEventServ
     private final EventStorage eventStorage;
     private final LocationStorage locationStorage;
     private final CategoryStorage categoryStorage;
+    private final StatsClient statsClient;
+    @Value("${app}")
+    private String appName;
 
-    public AdminEventServiceImpl(RequestStorage requestStorage, StatsClient statsClient, EventStorage eventStorage, LocationStorage locationStorage, CategoryStorage categoryStorage) {
+    public AdminEventServiceImpl(RequestStorage requestStorage, StatsClient statsClient, EventStorage eventStorage, LocationStorage locationStorage, CategoryStorage categoryStorage, StatsClient statsClient1) {
         super(requestStorage, statsClient);
         this.eventStorage = eventStorage;
         this.locationStorage = locationStorage;
         this.categoryStorage = categoryStorage;
+        this.statsClient = statsClient1;
     }
 
     @Override
-    public List<EventDto> getAllAdmEvents(EventAdminParams eventAdminParams, PageRequest pageRequest) {
+    public List<EventDto> getAllAdmEvents(EventAdminParams eventAdminParams, PageRequest pageRequest, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         Page<Event> eventPage = eventStorage.findAll(pageRequest);
 
         List<Event> filteredEvents = eventPage.getContent().stream()
@@ -70,7 +78,8 @@ public class AdminEventServiceImpl extends BaseService implements AdminEventServ
     }
 
     @Override
-    public EventDto updEvent(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto) {
+    public EventDto updEvent(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         if (updateEventAdminRequestDto.getEventDate() != null
                 && updateEventAdminRequestDto.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             throw new ValidationExcep("Ошибка даты.");
@@ -78,7 +87,6 @@ public class AdminEventServiceImpl extends BaseService implements AdminEventServ
         Event event = eventStorage.findById(eventId)
                 .orElseThrow(() -> new NotFoundExcep("Событие с id: " + eventId + " не найдено."));
 
-        // Валидации
         if (!event.getState().equals(PENDING)) {
             throw new ViolationExcep("Дата события не может быть изменена.");
         }
@@ -106,7 +114,6 @@ public class AdminEventServiceImpl extends BaseService implements AdminEventServ
         Optional.ofNullable(updateEventAdminRequestDto.getRequestModeration()).ifPresent(event::setRequestModeration);
         Optional.ofNullable(updateEventAdminRequestDto.getTitle()).ifPresent(event::setTitle);
 
-        // Обновление состояния
         if (updateEventAdminRequestDto.getStateAction() != null) {
             switch (updateEventAdminRequestDto.getStateAction()) {
                 case "REJECT_EVENT":

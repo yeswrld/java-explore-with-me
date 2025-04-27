@@ -1,8 +1,11 @@
 package ru.practicum.service.events.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.HitDto;
 import ru.practicum.client.StatsClient;
 import ru.practicum.service.ViewService.BaseService;
 import ru.practicum.service.category.model.Category;
@@ -39,18 +42,23 @@ public class PrivateEventServiceImpl extends BaseService implements PrivateEvent
     private final UserStorage userStorage;
     private final LocationStorage locationStorage;
     private final EventMapper eventMapper;
+    private final StatsClient statsClient;
+    @Value("${app}")
+    private String appName;
 
-    public PrivateEventServiceImpl(RequestStorage requestStorage, StatsClient statsClient, EventStorage eventStorage, CategoryStorage categoryStorage, UserStorage userStorage, LocationStorage locationStorage, EventMapper eventMapper) {
+    public PrivateEventServiceImpl(RequestStorage requestStorage, StatsClient statsClient, EventStorage eventStorage, CategoryStorage categoryStorage, UserStorage userStorage, LocationStorage locationStorage, EventMapper eventMapper, StatsClient statsClient1) {
         super(requestStorage, statsClient);
         this.eventStorage = eventStorage;
         this.categoryStorage = categoryStorage;
         this.userStorage = userStorage;
         this.locationStorage = locationStorage;
         this.eventMapper = eventMapper;
+        this.statsClient = statsClient1;
     }
 
     @Override
-    public EventDto addEvent(Long userId, NewEventDto newEventDto) {
+    public EventDto addEvent(Long userId, NewEventDto newEventDto, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         if (newEventDto.getEventDate() != null && newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(1)))
             throw new ValidationExcep("Ошибка даты");
         Category category = categoryStorage.findById(newEventDto.getCategory()).orElseThrow(() -> new NotFoundExcep("Категория с запрашиваемым ИД не найдена"));
@@ -62,7 +70,8 @@ public class PrivateEventServiceImpl extends BaseService implements PrivateEvent
     }
 
     @Override
-    public EventDto updateEvent(Long userId, Long eventId, EventUpdByUserDto eventUpdByUserDto) {
+    public EventDto updateEvent(Long userId, Long eventId, EventUpdByUserDto eventUpdByUserDto, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         if (eventUpdByUserDto.getEventDate() != null && eventUpdByUserDto.getEventDate().isBefore(LocalDateTime.now().plusHours(1)))
             throw new ValidationExcep("Ошибка даты");
         User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundExcep("Пользователь с ИД = " + userId + " не найден"));
@@ -89,14 +98,16 @@ public class PrivateEventServiceImpl extends BaseService implements PrivateEvent
     }
 
     @Override
-    public EventDto getEventByUserAdnEventIds(Long userId, Long eventId) {
+    public EventDto getEventByUserAdnEventIds(Long userId, Long eventId, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundExcep("Пользователь с ИД = " + userId + " не найден"));
         Event event = eventStorage.findById(eventId).orElseThrow(() -> new NotFoundExcep("Эвент с ИД = " + eventId + " не найден"));
         return EventMapper.eventToEventDto(event, null, null);
     }
 
     @Override
-    public List<EventShortDto> getEventsByUserId(Long userId, PageRequest pageRequest) {
+    public List<EventShortDto> getEventsByUserId(Long userId, PageRequest pageRequest, HttpServletRequest request) {
+        statsClient.addHit(new HitDto(null, appName, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
         return eventStorage.findAllByInitiatorId(userId, pageRequest).stream().map(event -> EventMapper.eventToEventShortDto(event, null, null)).collect(Collectors.toList());
     }
 }

@@ -11,5 +11,5 @@ import java.util.List;
 public interface PublicEventService {
     EventDto getEventById(Long eventId, HttpServletRequest request);
 
-    List<EventShortDto> getAllPublicEvents(EventUserParams userParams, PageRequest pageRequest);
+    List<EventShortDto> getAllPublicEvents(EventUserParams userParams, PageRequest pageRequest, HttpServletRequest request);
 }

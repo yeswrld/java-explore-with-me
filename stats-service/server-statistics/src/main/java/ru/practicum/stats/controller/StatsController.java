@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.HitDto;
 import ru.practicum.ViewStatsDto;
-import ru.practicum.stats.model.Hit;
 import ru.practicum.stats.service.StatsService;
 
 import java.time.LocalDateTime;

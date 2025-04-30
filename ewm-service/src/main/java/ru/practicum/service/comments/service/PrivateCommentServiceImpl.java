@@ -13,7 +13,6 @@ import ru.practicum.service.comments.mapper.CommentMapper;
 import ru.practicum.service.comments.model.Comment;
 import ru.practicum.service.comments.repository.CommentsStorage;
 import ru.practicum.service.events.model.Event;
-import ru.practicum.service.events.model.State;
 import ru.practicum.service.events.storage.EventStorage;
 import ru.practicum.service.exception.AccessExcep;
 import ru.practicum.service.exception.NotFoundExcep;

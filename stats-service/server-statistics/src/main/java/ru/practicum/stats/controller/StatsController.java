@@ -36,7 +36,6 @@ public class StatsController {
             @RequestParam(required = false, value = "unique") boolean unique
     ) {
         log.info("Запрос получения статистики с параметрами: start {}, end {}, uris {}, unique {}", start, end, uris, unique);
-        List<ViewStatsDto> statsDtoList = statsService.findHits(start, end, uris, unique);
-        return statsDtoList;
+        return statsService.findHits(start, end, uris, unique);
     }
 }

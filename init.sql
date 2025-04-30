@@ -1,0 +1,2 @@
+CREATE DATABASE statsService;
+GRANT ALL PRIVILEGES ON DATABASE statsService TO dmini;

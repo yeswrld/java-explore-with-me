@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.HitDto;
 import ru.practicum.ViewStatsDto;
+import ru.practicum.stats.exception.DateErrorExcep;
 import ru.practicum.stats.mapper.HitMapper;
 import ru.practicum.stats.model.Hit;
 import ru.practicum.stats.repository.HitStorage;
@@ -26,11 +27,16 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<ViewStatsDto> findHits(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+    public List<ViewStatsDto> findHits(LocalDateTime start, LocalDateTime end, List<String> uris,
+                                       Boolean unique
+    ) {
+        if (start.isAfter(end)) {
+            throw new DateErrorExcep("Ошибка даты.");
+        }
         if (Boolean.TRUE.equals(unique)) {
-            return hitStorage.findUniqueStats(start, end, uris);
+            return hitStorage.findAllUnique(start, end, uris);
         } else {
-            return hitStorage.findAllStats(start, end, uris);
+            return hitStorage.findAll(start, end, uris);
         }
     }
 }

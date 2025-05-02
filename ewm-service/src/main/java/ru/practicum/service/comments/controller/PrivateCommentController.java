@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.service.comments.dto.CommentDto;
 import ru.practicum.service.comments.dto.NewCommentDto;
@@ -21,13 +22,13 @@ public class PrivateCommentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto addComment(@RequestBody @Valid NewCommentDto newCommentDto, @PathVariable @Positive Long userId, HttpServletRequest request) {
-        log.info("USER ==>> Добавление комментария {}, пользователем с ИД = {}", newCommentDto, userId);
+    public CommentDto addComment(@RequestBody @Validated NewCommentDto newCommentDto, @PathVariable @Positive Long userId, HttpServletRequest request) {
+        log.info("USER ==>> Добавление комментария {}, пользователем с ИД = {}", newCommentDto.getText(), userId);
         return commentService.addComment(newCommentDto, userId, request);
     }
 
     @PatchMapping("/{commentId}")
-    public CommentDto updateComment(@RequestBody @Valid UpdCommentDto updCommentDto, @PathVariable @Positive Long userId, @PathVariable Long commentId, HttpServletRequest request) {
+    public CommentDto updateComment(@RequestBody @Validated UpdCommentDto updCommentDto, @PathVariable @Positive Long userId, @PathVariable Long commentId, HttpServletRequest request) {
         log.info("USER ==>> Обновление комментария c ИД = {}, пользователем с ИД = {}", commentId, userId);
         return commentService.updateComment(updCommentDto, userId, commentId, request);
     }

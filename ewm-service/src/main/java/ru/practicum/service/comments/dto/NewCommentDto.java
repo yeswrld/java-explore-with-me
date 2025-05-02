@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class NewCommentDto {
     @NotNull
     private Long eventId;
-    @NotBlank
-    @Size(min = 1, max = 5000)
+    @NotBlank(message = "Комментарий не может быть пустым")
+    @Size(min = 1, max = 5000, message = "Длина комментария должна быть от 1 до 5000 символов")
     private String text;
 }

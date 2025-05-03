@@ -2,6 +2,7 @@ package ru.practicum.service.comments.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +25,7 @@ public class AdminCommentController {
 
     @GetMapping("/users/{userId}")
     public List<CommentDto> getUserComments(@PathVariable @Positive Long userId,
-                                            @RequestParam(defaultValue = "0") @Positive int from,
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                             @RequestParam(defaultValue = "10") @Positive int size, HttpServletRequest request) {
         log.info("ADMIN ==>> Получение всех комментариев пользователя с ИД = {}", userId);
         int page = from / size;

@@ -8,5 +8,5 @@ import lombok.Data;
 public class UpdCommentDto {
     @NotBlank
     @Size(max = 5000)
-    String text;
+    private String text;
 }

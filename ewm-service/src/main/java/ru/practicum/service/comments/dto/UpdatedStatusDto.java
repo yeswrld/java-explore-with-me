@@ -5,5 +5,5 @@ import ru.practicum.service.events.model.State;
 
 @Data
 public class UpdatedStatusDto {
-    State state;
+    private State state;
 }

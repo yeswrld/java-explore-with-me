@@ -24,8 +24,8 @@ public class AdminCommentController {
 
     @GetMapping("/users/{userId}")
     public List<CommentDto> getUserComments(@PathVariable @Positive Long userId,
-                                            @RequestParam(defaultValue = "0") int from,
-                                            @RequestParam(defaultValue = "10") int size, HttpServletRequest request) {
+                                            @RequestParam(defaultValue = "0") @Positive int from,
+                                            @RequestParam(defaultValue = "10") @Positive int size, HttpServletRequest request) {
         log.info("ADMIN ==>> Получение всех комментариев пользователя с ИД = {}", userId);
         int page = from / size;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.unsorted());

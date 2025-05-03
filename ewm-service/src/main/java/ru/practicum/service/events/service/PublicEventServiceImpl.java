@@ -47,7 +47,7 @@ public class PublicEventServiceImpl extends BaseService implements PublicEventSe
     @Override
     public EventDto getEventById(Long eventId, HttpServletRequest request) {
         Event event = eventStorage.findById(eventId)
-                .orElseThrow(() -> new NotFoundExcep("Событие не найдено"));
+                .orElseThrow(() -> new NotFoundExcep("Эвент не найден"));
 
         if (!event.getState().equals(PUBLISHED)) {
             throw new NotFoundExcep("Событие не опубликовано");
